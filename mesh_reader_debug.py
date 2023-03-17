@@ -1,59 +1,18 @@
 from mesh_fun import *
 import numpy as np
-# Pixel = ReadMesh('Example1.inp')
-# Pixel.Connectivity()
-
-# DICmesh = ReadMesh('Example_coarse.inp')
-# DICmesh.Connectivity()
-
-# MDICmesh = ReadMesh('Example_FEM.inp')
-# MDICmesh.Connectivity()
-Pixel = ReadMesh('2DFINE.inp')
+Pixel = ReadMesh('SAMPLE_2D.inp', dim=2)
 Pixel.Connectivity()
 
-DICmesh = ReadMesh('2DDIC.inp')
-DICmesh.Connectivity()
-
-MDICmesh = ReadMesh('2DFEM.inp')
-MDICmesh.Connectivity()
 
 
-
-U = np.loadtxt('U1.txt') 
+U = np.loadtxt('Sample_U.txt') 
 U = U[:,1]                      #pixel mesh
-UDIC = []
-num = int(np.sqrt(Pixel.ndof/2))
-for i in range(0, num, 5):
-    for j in range(0, num, 5):
-        UDIC.append(U[i * num + j])   
-Uy = U[num * num : len(U)]
-for i in range(0, num, 5):
-    for j in range(0, num, 5):
-        UDIC.append(Uy[i * num + j]) 
-UDIC = np.array(UDIC)
 
-num = int(np.sqrt(len(UDIC)/2))
-MUDIC = []
-for i in range(0, num, 10):
-    for j in range(0, num, 10):
-        MUDIC.append(UDIC[i * num + j])   
-Uy = U[num * num : len(U)]
-for i in range(0, num, 10):
-    for j in range(0, num, 10):
-        MUDIC.append(Uy[i * num + j]) 
-MUDIC = np.array(MUDIC)
-#m.Plot()
-#m.PlotContourDispl(U)
 
 Pixel.PlotContourStrain(U)
 plt.show()
 
-DICmesh.PlotContourStrain(UDIC)
-plt.show()
 
-
-MDICmesh.PlotContourStrain(MUDIC)
-plt.show()
 
 
 #m.StrainAtNodes(self, U):  compute strain at the nodes

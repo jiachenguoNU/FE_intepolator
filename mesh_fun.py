@@ -96,7 +96,7 @@ def ReadMesh(fn, dim=2):
     else :
         n = mesh.points
     e = dict()
-    for et in mesh.cells_dict.keys():
+    for et in mesh.cells_dict.keys(): #type of the elements quad, tri or whatever the mesh has
         e[eltype_s2n[et]] = mesh.cells_dict[et]
     m = Mesh(e, n, dim)
     m.point_data = mesh.point_data
@@ -600,7 +600,7 @@ def ShapeFunctions(eltype):
     elif eltype == 3:
         """
         #############
-            qua4
+            qua4 in the parent coor
         #############
         """
         def N(x, y):
@@ -1020,12 +1020,8 @@ class Mesh:
                     colj[rangephi] = repcol.ravel()
                     valj[rangephi] = phi.ravel()
                     if G:
-                        dphidx = (dyds / detJ)[:, np.newaxis] * dN_xi + (-dydr / detJ)[
-                            :, np.newaxis
-                        ] * dN_eta
-                        dphidy = (-dxds / detJ)[:, np.newaxis] * dN_xi + (dxdr / detJ)[
-                            :, np.newaxis
-                        ] * dN_eta
+                        dphidx = (dyds / detJ)[:, np.newaxis] * dN_xi + (-dydr / detJ)[:, np.newaxis] * dN_eta
+                        dphidy = (-dxds / detJ)[:, np.newaxis] * dN_xi + (dxdr / detJ)[:, np.newaxis] * dN_eta
                         valxj[rangephi] = dphidx.ravel()
                         valyj[rangephi] = dphidy.ravel()
                     if EB:
@@ -1418,11 +1414,11 @@ class Mesh:
             return col, row, val, valx, valy, wdetJ
         elif et in (2, 3, 9, 10, 16): # 2D elements
             xg, yg, wg, N, Ndx, Ndy = ShapeFunctions(et)
-            phi = N(xg, yg)
+            phi = N(xg, yg) #shape function value at gauss point
             dN_xi = Ndx(xg, yg)
             dN_eta = Ndy(xg, yg)
             # elements
-            ne = len(e)  # nb of elements
+            ne = len(e)  # nb (number) of elements
             nfun = phi.shape[1]  # nb of shape fun per element
             npg = len(xg)  # nb of gauss point per element
             nzv = nfun * npg * ne  # nb of non zero values in dphixdx
@@ -1435,18 +1431,18 @@ class Mesh:
             repdof = self.conn[e, 0]
             xn = self.n[e, 0]
             yn = self.n[e, 1]
-            for i in range(len(xg)):
-                dxdr = xn @ dN_xi[i, :]
-                dydr = yn @ dN_xi[i, :]
+            for i in range(len(xg)): #what's dr and ds
+                dxdr = xn @ dN_xi[i, :] #dxdksi
+                dydr = yn @ dN_xi[i, :] #dydksi
                 dxds = xn @ dN_eta[i, :]
                 dyds = yn @ dN_eta[i, :]
-                detJ = dxdr * dyds - dxds * dydr
+                detJ = dxdr * dyds - dxds * dydr #Jacobian @each gauss point
                 wdetJ[np.arange(ne) + i * ne] = abs(detJ) * wg[i]
                 dphidx = (dyds / detJ)[:, np.newaxis] * dN_xi[i, :] + (-dydr / detJ)[
                     :, np.newaxis] * dN_eta[i, :]
                 dphidy = (-dxds / detJ)[:, np.newaxis] * dN_xi[i, :] + (dxdr / detJ)[
                     :, np.newaxis] * dN_eta[i, :]
-                repnzv = np.arange(ne * nfun) + i * ne * nfun
+                repnzv = np.arange(ne * nfun) + i * ne * nfun #column number for different item for each gauss point
                 col[repnzv] = repdof.ravel()
                 row[repnzv] = np.tile(np.arange(ne) + i * ne, [nfun, 1]).T.ravel()
                 val[repnzv] = np.tile(phi[i, :], [ne, 1]).ravel()
@@ -1868,7 +1864,7 @@ class Mesh:
         else:
             m = self
         if self.dim == 2:
-            exxgp = m.dphixdx @ U
+            exxgp = m.dphixdx @ U #strain at gauss points
             eyygp = m.dphiydy @ U
             exygp = 0.5 * m.dphixdy @ U + 0.5 * m.dphiydx @ U
             EpsXX = np.zeros(nnodes)
@@ -1877,7 +1873,7 @@ class Mesh:
             phi = m.phix[:,:nnodes]
             w = np.array(np.sum(phi, axis=0))[0]
             phi = phi @ sp.sparse.diags(1/w)
-            EpsXX = phi.T @ exxgp
+            EpsXX = phi.T @ exxgp #strain at which place? I think it's on the nodes.
             EpsYY = phi.T @ eyygp
             EpsXY = phi.T @ exygp
             return EpsXX, EpsYY, EpsXY
@@ -2224,7 +2220,7 @@ class Mesh:
             self.Plot(n=n, alpha=0.1)
             plt.axis("off")
             plt.title("Magnitude")
-            plt.colorbar()
+            plt.colorbar(fraction=0.046, pad=0.04)
         else:
             fig1, (ax1, ax2) = plt.subplots(1, 2)
             ax1.set_aspect('equal')
@@ -2295,14 +2291,14 @@ class Mesh:
             plt.axis("off")
             plt.axis("equal")
             plt.title("EPS_1")
-            plt.colorbar()
+            plt.colorbar(fraction=0.046, pad=0.04)
             plt.figure()
             plt.tricontourf(n[:, 0], n[:, 1], triangles, E2[self.conn[:, 0]], 20, alpha=alpha)
             self.Plot(n=n, alpha=0.1)
             plt.axis("off")
             plt.axis("equal")
             plt.title("EPS_2")
-            plt.colorbar()
+            plt.colorbar(fraction=0.046, pad=0.04)
             plt.show()
         elif stype == 'maxpcp':
             E1 = 0.5*EX + 0.5*EY - 0.5*np.sqrt(EX**2 - 2*EX*EY + EY**2 + 4*EXY**2)
@@ -2316,7 +2312,7 @@ class Mesh:
             plt.axis("off")
             plt.axis("equal")
             plt.title("EPS_max")
-            plt.colorbar()
+            plt.colorbar(fraction=0.046, pad=0.04)
         elif stype == 'mag':
             EVM = np.sqrt(EX**2 + EY**2 + EX * EY + 3 * EXY**2)
             if newfig:
@@ -2326,7 +2322,7 @@ class Mesh:
             plt.axis("off")
             plt.axis("equal")
             plt.title("EPS_VM")
-            plt.colorbar()
+            plt.colorbar(fraction=0.046, pad=0.04)
         else:
             """ Plot mesh and field contour """
             fig2, (ax21, ax22, ax23) = plt.subplots(1, 3)
@@ -2335,19 +2331,19 @@ class Mesh:
 
             exx = ax21.tricontourf(n[:, 0], n[:, 1], triangles, EX[self.conn[:, 0]], 20, alpha=alpha)
             #self.Plot(n=n, alpha=0.1)
-            fig2.colorbar(exx)
+            fig2.colorbar(exx,fraction=0.046, pad=0.04)
             ax21.set_title('E_xx')
             
             ax22.set_aspect('equal')
             eyy = ax22.tricontourf(n[:, 0], n[:, 1], triangles, EY[self.conn[:, 0]], 20, alpha=alpha)
             #self.Plot(n=n, alpha=0.1)
-            fig2.colorbar(eyy)
+            fig2.colorbar(eyy, fraction=0.046, pad=0.04)
             ax22.set_title('E_yy')
                         
             ax23.set_aspect('equal')
             exy = ax23.tricontourf(n[:, 0], n[:, 1], triangles, EXY[self.conn[:, 0]], 20, alpha=alpha)
             #self.Plot(n=n, alpha=0.1)
-            fig2.colorbar(exy)
+            fig2.colorbar(exy, fraction=0.046, pad=0.04)
             ax23.set_title('E_xy')
             plt.show()
     def PlotNodeLabels(self, d=0, **kwargs):
