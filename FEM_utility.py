@@ -282,5 +282,29 @@ class Mesh:
             m = self
         exxgp = m.dphixdx @ U
         eyygp = m.dphiydy @ U
-        exygp = 0.5 * m.dphixdy @ U + 0.5 * m.dphiydx @ U
+        exygp = 0.5 * m.dphixdy @ U + 0.5 * m.dphiydx @ U       
         return exxgp, eyygp, exygp
+    
+def isInBox(b, x, y, z=None):
+    """Find whether set of points of coords x, y
+    is in the box b = [[xmin, ymin, zmin],
+                        [xmax, ymax, zmax]]"""
+    if len(b) != 2:
+        print("the box not correct")
+    e = 1e-6 * np.max(np.abs(b.ravel())) + 1e-6 * np.std(b.ravel())
+    if z is None:
+        return (
+            ((b[0, 0] - e) < x)
+            * ((b[0, 1] - e) < y)
+            * (x < (b[1, 0] + e))
+            * (y < (b[1, 1] + e))
+        )
+    else:
+        return (
+            ((b[0, 0] - e) < x)
+            * ((b[0, 1] - e) < y)
+            * ((b[0, 2] - e) < z)
+            * (x < (b[1, 0] + e))
+            * (y < (b[1, 1] + e))
+            * (z < (b[1, 2] + e))
+        )
