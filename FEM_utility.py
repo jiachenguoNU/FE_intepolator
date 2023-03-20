@@ -233,122 +233,54 @@ class Mesh:
         return col, row, val, valx, valy, wdetJ
 
 
-    def GaussIntegration(self):
+    def ShapeFunctionGaussPoint(self):
         """Builds a Gauss integration scheme"""
-        print('Gauss Integration.')
-        if self.dim == 3:
-            self.wdetJ = np.array([])
-            col = np.array([])
-            row = np.array([])
-            val = np.array([])
-            valx = np.array([])
-            valy = np.array([])
-            valz = np.array([])
-            npg = 0
-            for je in self.e.keys():
-                colj, rowj, valj, valxj, valyj, valzj, wdetJj = self.__GaussIntegElem(self.e[je], je)
-                col = np.append(col, colj)
-                row = np.append(row, rowj + npg)
-                val = np.append(val, valj)
-                valx = np.append(valx, valxj)
-                valy = np.append(valy, valyj)
-                valz = np.append(valz, valzj)
-                self.wdetJ = np.append(self.wdetJ, wdetJj)
-                npg += len(wdetJj)
-            self.npg = len(self.wdetJ)
-            colx = col + 0 * self.ndof // self.dim
-            coly = col + 1 * self.ndof // self.dim
-            colz = col + 2 * self.ndof // self.dim
-            # shape funs
-            self.phix = sp.sparse.csr_matrix(
-                (val, (row, colx)), shape=(self.npg, self.ndof))
-            self.phiy = sp.sparse.csr_matrix(
-                (val, (row, coly)), shape=(self.npg, self.ndof))
-            self.phiz = sp.sparse.csr_matrix(
-                (val, (row, colz)), shape=(self.npg, self.ndof))
-            # phix
-            self.dphixdx = sp.sparse.csr_matrix(
-                (valx, (row, colx)), shape=(self.npg, self.ndof))
-            self.dphixdy = sp.sparse.csr_matrix(
-                (valy, (row, colx)), shape=(self.npg, self.ndof))
-            self.dphixdz = sp.sparse.csr_matrix(
-                (valz, (row, colx)), shape=(self.npg, self.ndof))
-            # phiy
-            self.dphiydx = sp.sparse.csr_matrix(
-                (valx, (row, coly)), shape=(self.npg, self.ndof))
-            self.dphiydy = sp.sparse.csr_matrix(
-                (valy, (row, coly)), shape=(self.npg, self.ndof))
-            self.dphiydz = sp.sparse.csr_matrix(
-                (valz, (row, coly)), shape=(self.npg, self.ndof))
-            # phiz
-            self.dphizdx = sp.sparse.csr_matrix(
-                (valx, (row, colz)), shape=(self.npg, self.ndof))
-            self.dphizdy = sp.sparse.csr_matrix(
-                (valy, (row, colz)), shape=(self.npg, self.ndof))
-            self.dphizdz = sp.sparse.csr_matrix(
-                (valz, (row, colz)), shape=(self.npg, self.ndof))
-            # gp coordinates
-            rep, = np.where(self.conn[:, 0] >= 0)
-            qx = np.zeros(self.ndof)
-            qx[self.conn[rep, :]] = self.n[rep, :]
-            self.pgx = self.phix.dot(qx)
-            self.pgy = self.phiy.dot(qx)
-            self.pgz = self.phiz.dot(qx)
-        else: # dim 2
-            self.wdetJ = np.array([])
-            col = np.array([])
-            row = np.array([])
-            val = np.array([])
-            valx = np.array([])
-            valy = np.array([])
-            npg = 0
-            for je in self.e.keys():
-                colj, rowj, valj, valxj, valyj, wdetJj = self.__GaussIntegElem(self.e[je], je)
-                col = np.append(col, colj)
-                row = np.append(row, rowj + npg)
-                val = np.append(val, valj)
-                valx = np.append(valx, valxj)
-                valy = np.append(valy, valyj)
-                self.wdetJ = np.append(self.wdetJ, wdetJj)
-                npg += len(wdetJj)
-            self.npg = len(self.wdetJ)
-            colx = col + 0 * self.ndof // self.dim
-            coly = col + 1 * self.ndof // self.dim
-            self.phix = sp.sparse.csr_matrix(
-                (val, (row, colx)), shape=(self.npg, self.ndof))
-            self.phiy = sp.sparse.csr_matrix(
-                (val, (row, coly)), shape=(self.npg, self.ndof))
-            self.dphixdx = sp.sparse.csr_matrix(
-                (valx, (row, colx)), shape=(self.npg, self.ndof))
-            self.dphixdy = sp.sparse.csr_matrix(
-                (valy, (row, colx)), shape=(self.npg, self.ndof))
-            self.dphiydx = sp.sparse.csr_matrix(
-                (valx, (row, coly)), shape=(self.npg, self.ndof))
-            self.dphiydy = sp.sparse.csr_matrix(
-                (valy, (row, coly)), shape=(self.npg, self.ndof))
-            rep, = np.where(self.conn[:, 0] >= 0)
-            qx = np.zeros(self.ndof)
-            qx[self.conn[rep, :]] = self.n[rep, :]
-            self.pgx = self.phix.dot(qx)
-            self.pgy = self.phiy.dot(qx)
+        print('Shape function at Gauss Points has been initialized.')
+        self.wdetJ = np.array([])
+        col = np.array([])
+        row = np.array([])
+        val = np.array([])
+        valx = np.array([])
+        valy = np.array([])
+        npg = 0
+        for je in self.e.keys():
+            colj, rowj, valj, valxj, valyj, wdetJj = self.__GaussIntegElem(self.e[je], je)
+            col = np.append(col, colj)
+            row = np.append(row, rowj + npg)
+            val = np.append(val, valj)
+            valx = np.append(valx, valxj)
+            valy = np.append(valy, valyj)
+            self.wdetJ = np.append(self.wdetJ, wdetJj)
+            npg += len(wdetJj)
+        self.npg = len(self.wdetJ)
+        colx = col + 0 * self.ndof // self.dim
+        coly = col + 1 * self.ndof // self.dim
+        self.phix = sp.sparse.csr_matrix(
+            (val, (row, colx)), shape=(self.npg, self.ndof))
+        self.phiy = sp.sparse.csr_matrix(
+            (val, (row, coly)), shape=(self.npg, self.ndof))
+        self.dphixdx = sp.sparse.csr_matrix(
+            (valx, (row, colx)), shape=(self.npg, self.ndof))
+        self.dphixdy = sp.sparse.csr_matrix(
+            (valy, (row, colx)), shape=(self.npg, self.ndof))
+        self.dphiydx = sp.sparse.csr_matrix(
+            (valx, (row, coly)), shape=(self.npg, self.ndof))
+        self.dphiydy = sp.sparse.csr_matrix(
+            (valy, (row, coly)), shape=(self.npg, self.ndof))
+        rep, = np.where(self.conn[:, 0] >= 0)
+        qx = np.zeros(self.ndof)
+        qx[self.conn[rep, :]] = self.n[rep, :]
+        self.pgx = self.phix.dot(qx)
+        self.pgy = self.phiy.dot(qx)
 
     def StrainAtGaussPoint(self, U):
         nnodes = self.ndof // self.dim
         if not hasattr(self, "dphixdx"):
             m = self.Copy()
-            m.GaussIntegration()
+            m.ShapeFunctionGaussPoint()
         else:
             m = self
-        if self.dim == 2:
-            exxgp = m.dphixdx @ U
-            eyygp = m.dphiydy @ U
-            exygp = 0.5 * m.dphixdy @ U + 0.5 * m.dphiydx @ U
-            return exxgp, eyygp, exygp
-        else: #dim 3
-            exxgp = m.dphixdx @ U
-            eyygp = m.dphiydy @ U
-            ezzgp = m.dphizdz @ U
-            exygp = 0.5 * m.dphixdy @ U + 0.5 * m.dphiydx @ U
-            exzgp = 0.5 * m.dphixdz @ U + 0.5 * m.dphizdx @ U
-            eyzgp = 0.5 * m.dphiydz @ U + 0.5 * m.dphizdy @ U
-            return exxgp, eyygp, ezzgp, exygp, exzgp, eyzgp
+        exxgp = m.dphixdx @ U
+        eyygp = m.dphiydy @ U
+        exygp = 0.5 * m.dphixdy @ U + 0.5 * m.dphiydx @ U
+        return exxgp, eyygp, exygp
