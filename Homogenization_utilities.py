@@ -56,7 +56,7 @@ def MDICGaussPointList(MDIC_ele_list, Nx, Ny):
     
     return MDICGaussPointList
 
-
-Mele = MDICElementList(2, 2, 4, 4)
-MGP = MDICGaussPointList(Mele, 4, 4)
-print(Mele)
+#test of this function
+# Mele = MDICElementList(2, 2, 4, 4)
+# MGP = MDICGaussPointList(Mele, 4, 4)
+# print(Mele)
