@@ -1,6 +1,7 @@
 import numpy as np
 import meshio
 import scipy as sp
+import matplotlib.pyplot as plt
 
 def ElTypes():
     """
@@ -285,6 +286,114 @@ class Mesh:
         exygp = 0.5 * m.dphixdy @ U + 0.5 * m.dphiydx @ U       
         return exxgp, eyygp, exygp
     
+    
+    def PlotContourStrain(self, U, n=None, s=1.0, stype='comp', newfig=True, **kwargs):
+            """
+            Plots the strain field using Matplotlib Library.
+            
+            Parameters
+            ----------
+            U : 1D NUMPY.ARRAY
+                displacement dof vector
+            n : NUMPY.ARRAY, optional
+                Coordinate of the nodes. The default is None, which corresponds
+                to using self.n instead.
+            s : FLOAT, optional
+                Deformation scale factor. The default is 1.0.
+            stype : STRING, optional
+                'comp' > plots the 3 components of the strain field
+                'mag' > plots the 'VonMises' equivalent strain
+                'pcp'> plots the 2 principal strain fields
+                'maxpcp'> plots the maximal principal strain fields
+                The default is 'comp'.
+            newfigure : BOOL
+                if TRUE plot in a new figure (default)
+            **kwargs : TYPE
+                DESCRIPTION.
+
+            Returns
+            -------
+            None.
+
+            """
+            if n is None:
+                n = self.n.copy()
+                n += U[self.conn] * s  # s: amplification scale factor
+            triangles = np.zeros((0, 3), dtype=int)
+            for ie in self.e.keys():
+                if ie == 3 or ie == 16 or ie == 10:  # quadrangles
+                    triangles = np.vstack(
+                        (triangles, self.e[ie][:, [0, 1, 3]], self.e[ie][:, [1, 2, 3]])
+                    )
+                elif ie == 2 or ie == 9:  # triangles
+                    triangles = np.vstack((triangles, self.e[ie]))
+            EX, EY, EXY = self.StrainAtNodes(U)
+            alpha = kwargs.pop("alpha", 1)
+            if stype == 'pcp':
+                E1 = 0.5*EX + 0.5*EY - 0.5*np.sqrt(EX**2 - 2*EX*EY + EY**2 + 4*EXY**2)
+                E2 = 0.5*EX + 0.5*EY + 0.5*np.sqrt(EX**2 - 2*EX*EY + EY**2 + 4*EXY**2)
+                plt.figure()
+                plt.tricontourf(n[:, 0], n[:, 1], triangles, E1[self.conn[:, 0]], 20, alpha=alpha)
+                self.Plot(n=n, alpha=0.1)
+                plt.axis("off")
+                plt.axis("equal")
+                plt.title("EPS_1")
+                plt.colorbar(fraction=0.046, pad=0.04)
+                plt.figure()
+                plt.tricontourf(n[:, 0], n[:, 1], triangles, E2[self.conn[:, 0]], 20, alpha=alpha)
+                self.Plot(n=n, alpha=0.1)
+                plt.axis("off")
+                plt.axis("equal")
+                plt.title("EPS_2")
+                plt.colorbar(fraction=0.046, pad=0.04)
+                plt.show()
+            elif stype == 'maxpcp':
+                E1 = 0.5*EX + 0.5*EY - 0.5*np.sqrt(EX**2 - 2*EX*EY + EY**2 + 4*EXY**2)
+                E2 = 0.5*EX + 0.5*EY + 0.5*np.sqrt(EX**2 - 2*EX*EY + EY**2 + 4*EXY**2)
+                rep, = np.where(abs(E1)<abs(E2))
+                E1[rep] = E2[rep]
+                if newfig:
+                    plt.figure()
+                plt.tricontourf(n[:, 0], n[:, 1], triangles, E1[self.conn[:, 0]], 20, alpha=alpha)
+                self.Plot(n=n, alpha=0.1)
+                plt.axis("off")
+                plt.axis("equal")
+                plt.title("EPS_max")
+                plt.colorbar(fraction=0.046, pad=0.04)
+            elif stype == 'mag':
+                EVM = np.sqrt(EX**2 + EY**2 + EX * EY + 3 * EXY**2)
+                if newfig:
+                    plt.figure()
+                plt.tricontourf(n[:, 0], n[:, 1], triangles, EVM[self.conn[:, 0]], 20, alpha=alpha)
+                self.Plot(n=n, alpha=0.1)
+                plt.axis("off")
+                plt.axis("equal")
+                plt.title("EPS_VM")
+                plt.colorbar(fraction=0.046, pad=0.04)
+            else:
+                """ Plot mesh and field contour """
+                fig2, (ax21, ax22, ax23) = plt.subplots(1, 3)
+                ax21.set_aspect('equal')
+
+
+                exx = ax21.tricontourf(n[:, 0], n[:, 1], triangles, EX[self.conn[:, 0]], 20, alpha=alpha)
+                #self.Plot(n=n, alpha=0.1)
+                fig2.colorbar(exx,fraction=0.046, pad=0.04)
+                ax21.set_title('E_xx')
+                
+                ax22.set_aspect('equal')
+                eyy = ax22.tricontourf(n[:, 0], n[:, 1], triangles, EY[self.conn[:, 0]], 20, alpha=alpha)
+                #self.Plot(n=n, alpha=0.1)
+                fig2.colorbar(eyy, fraction=0.046, pad=0.04)
+                ax22.set_title('E_yy')
+                            
+                ax23.set_aspect('equal')
+                exy = ax23.tricontourf(n[:, 0], n[:, 1], triangles, EXY[self.conn[:, 0]], 20, alpha=alpha)
+                #self.Plot(n=n, alpha=0.1)
+                fig2.colorbar(exy, fraction=0.046, pad=0.04)
+                ax23.set_title('E_xy')
+                plt.show()
+
 def isInBox(b, x, y, z=None):
     """Find whether set of points of coords x, y
     is in the box b = [[xmin, ymin, zmin],
