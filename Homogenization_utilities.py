@@ -1,5 +1,9 @@
 #Functions for homogenization purposes
+
+import numpy as np
+def MDICElementList(nx, ny, Nx, Ny):
 #get the ID of all the DIC elements in each MDIC elements
+#output:
 #number of rows: number of MDIC elements
 #columns: the ID of all the DIC elements in that element
 #layout and numbering of the gauss points
@@ -13,8 +17,7 @@
 #################
 # 0 # 1 # 2 # 3 # 
 #################
-import numpy as np
-def MDICElementList(nx, ny, Nx, Ny):
+
     num_MDIC_ele_x = int(Nx/nx)
     num_MDIC_ele_y = int(Ny/ny)
     MDIC_ele_list = []
@@ -33,6 +36,7 @@ def MDICElementList(nx, ny, Nx, Ny):
 
 def MDICGaussPointList(MDIC_ele_list, Nx, Ny):
 #get the ID of all the gauss points in each MDIC elements
+#output:
 #number of rows: number of MDIC elements
 #columns: the ID of all the gauss points in that element
 #layout and numbering of the gauss points
@@ -55,6 +59,19 @@ def MDICGaussPointList(MDIC_ele_list, Nx, Ny):
         MDICGaussPointList[i] = list(GP)
     
     return MDICGaussPointList
+
+
+def DIC2MDICstrain(MDICGaussPointList, exxgp, eyygp, exygp):
+#solve the homogenized strain component in each MDIC element using the strain values at all the gauss points inside the element
+#output: numpy array: row=1, column = number of MDIC elements
+    exxMDIC = []
+    eyyMDIC = []
+    exyMDIC = []
+    for i in range(len(MDICGaussPointList)):
+        exxMDIC = np.append(exxMDIC, np.average(exxgp[MDICGaussPointList[i]]))
+        eyyMDIC = np.append(eyyMDIC, np.average(eyygp[MDICGaussPointList[i]]))
+        exyMDIC = np.append(exyMDIC, np.average(exygp[MDICGaussPointList[i]]))
+    return exxMDIC, eyyMDIC, exyMDIC
 
 #test of this function
 # Mele = MDICElementList(2, 2, 4, 4)
