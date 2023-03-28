@@ -4,14 +4,15 @@ from Homogenization_utilities import *
 import numpy as np
 import matplotlib.pyplot as plt
 
-Mesh = ReadMesh('2DFINE.inp')
+Mesh = ReadMesh('2DFINE_notype.inp')
 Mesh.Connectivity()
 
 
 
 U = np.loadtxt('finemesh_U.txt') 
-U = U[:,1]                      #pixel mesh
-
+Ux = U[:63001,1]                      #ux
+Uy = U[:63001,2]                      #uy
+U = np.concatenate((Ux, Uy), axis = 0)
 exxgp, eyygp, exygp = Mesh.StrainAtGaussPoint(U)
 
 MDICelementlist = MDICElementList(50, 50, 250, 250)
