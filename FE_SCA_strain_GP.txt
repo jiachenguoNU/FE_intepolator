@@ -1,22 +1,3 @@
-********************************************************************************
-Field Output Report, written Mon Mar 27 23:12:40 2023
-
-Source 1
----------
-
-   ODB: C:/Users/JGZ1751/AppData/Local/Temp/Job_FE_SCA1679976636.265.odb
-   Step: Step-1
-   Frame: Increment      3345: Step Time =   0.6000
-
-Loc 1 : Integration point values from source 1
-
-Output sorted by column "Element Label".
-
-Field Output reported at integration points for part: PART-1-1
-
-   Element Label             Int         LE.LE11         LE.LE22         LE.LE12
-                              Pt          @Loc 1          @Loc 1          @Loc 1
----------------------------------------------------------------------------------
                1               1     9.88531E-03    -2.00744E-03     4.28992E-03
                2               1     11.1950E-03    -4.55732E-03     833.784E-06
                3               1     12.1506E-03    -5.39728E-03    -244.066E-06
