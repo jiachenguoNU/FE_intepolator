@@ -3,7 +3,8 @@ from FEM_utility import *
 from Homogenization_utilities import *
 import numpy as np
 import matplotlib.pyplot as plt
-
+from mpl_toolkits.mplot3d import Axes3D
+from matplotlib import cm
 
 
 
@@ -45,6 +46,20 @@ MDICelementlist = MDICElementList(1, 1, 5, 5) #average the strain at four gauss 
 MDICgausspointlist = MDICGaussPointList(MDICelementlist, 5 , 5)
 
 exxFESCA, eyyFESCA, exyFESCA = DIC2MDICstrain(MDICgausspointlist, exxgp_FESCA, eyygp_FESCA, exygp_FESCA)
-print('The L2 norm error for method 1 is', np.linalg.norm(E_FESCA - exxFESCA))  
+print('The L2 norm error for method 2 is', np.linalg.norm(exxMDIC - exxFESCA))  
 
+x = np.arange(0.05, 0.46, 0.1)
+y = np.arange(0.05, 0.46, 0.1)
+X,Y = np.meshgrid(x,y)
+
+fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+
+ax.plot_surface(X, Y, np.reshape(exxMDIC + 1, (5,5)), cmap=cm.coolwarm, linewidth=0, alpha = 0.4)
+ax.scatter(X, Y, np.reshape(exxFESCA + 1, (5,5)))
+
+ax.set_xlabel('x')
+ax.set_ylabel('y')
+ax.set_zlabel('Deformation gradient')
+
+plt.show()
 print('Hello')
